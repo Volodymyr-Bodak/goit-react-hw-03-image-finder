@@ -16,7 +16,6 @@ class App extends Component {
     currentPage: 1,
     selectedImage: null,
     loading: false,
-    initialLoading: false,
     hasMoreImages: true,
   };
 
@@ -25,7 +24,7 @@ class App extends Component {
       images: [],
       query: searchQuery,
       currentPage: 1,
-      initialLoading: true,
+      loading: true, // Set loading to true during the initial search
       hasMoreImages: true,
       shouldFetchMore: false,
     });
@@ -35,13 +34,15 @@ class App extends Component {
     this.searchImages(searchQuery);
   };
 
-  componentDidUpdate() {
-    const { initialLoading, currentPage, query, hasMoreImages, shouldFetchMore } = this.state;
+  componentDidUpdate(prevProps, prevState) {
+    const { loading, query, currentPage, shouldFetchMore } = this.state;
 
-    if (initialLoading && !shouldFetchMore) {
-      this.fetchImages(query, 1);
-    } else if (shouldFetchMore && hasMoreImages) {
-      this.fetchImages(query, currentPage);
+    if (loading && !prevState.loading) {
+      if (shouldFetchMore) {
+        this.fetchImages(query, currentPage);
+      } else {
+        this.fetchImages(query, 1);
+      }
     }
   }
 
@@ -56,20 +57,21 @@ class App extends Component {
         images: page === 1 ? data : [...prevState.images, ...data],
         hasMoreImages: data.length > 0,
         loading: false, // Set loading to false after images are fetched
-        initialLoading: false, // Set initialLoading to false after the initial search is done.
       }));
     } catch (error) {
       console.error("Error fetching images:", error);
-      this.setState({ loading: false, initialLoading: false });
+      this.setState({ loading: false });
     }
   };
 
   handleLoadMore = () => {
     this.setState((prevState) => ({
       currentPage: prevState.currentPage + 1,
+      loading: true, // Set loading to true when "Load more" button is clicked
       shouldFetchMore: true,
     }));
   };
+
 
   handleImageClick = (id) => {
     const { images } = this.state;
