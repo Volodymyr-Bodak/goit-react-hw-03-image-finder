@@ -2,6 +2,7 @@
 import React from "react";
 import ImageGalleryItem from "./ImageGalleryItem";
 import s from "components/styles.module.css";
+import PropTypes from "prop-types";
 
 
 const ImageGallery = ({ images, onImageClick }) => {
@@ -17,6 +18,16 @@ const ImageGallery = ({ images, onImageClick }) => {
       ))}
     </ul>
   );
+};
+ImageGallery.propTypes = {
+  images: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      webformatURL: PropTypes.string.isRequired,
+      tags: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  onImageClick: PropTypes.func.isRequired,
 };
 
 export default ImageGallery;
