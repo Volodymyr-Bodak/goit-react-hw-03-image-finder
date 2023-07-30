@@ -5,11 +5,11 @@ import s from "components/styles.module.css";
 
 const Button = ({ onClick, showButton }) => {
   return (
-    showButton && (
+   
       <button className={s.Buttonload} onClick={onClick}>
         Load more
       </button>
-    )
+    
   );
 };
 

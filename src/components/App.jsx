@@ -24,30 +24,15 @@ class App extends Component {
       images: [],
       query: searchQuery,
       currentPage: 1,
-      loading: true, 
+      loading: true,
       hasMoreImages: true,
-      shouldFetchMore: false,
+    }, () => {
+      this.fetchImages(searchQuery, 1);
     });
   };
 
-  handleSearch = (searchQuery) => {
-    this.searchImages(searchQuery);
-  };
-
-  componentDidUpdate(prevProps, prevState) {
-    const { loading, query, currentPage, shouldFetchMore } = this.state;
-
-    if (loading && !prevState.loading) {
-      if (shouldFetchMore) {
-        this.fetchImages(query, currentPage);
-      } else {
-        this.fetchImages(query, 1);
-      }
-    }
-  }
-
   fetchImages = async (searchQuery, page) => {
-    this.setState({ loading: true, shouldFetchMore: false });
+    this.setState({ loading: true });
 
     try {
       const response = await axios.get(`${baseUrl}&q=${searchQuery}&page=${page}`);
@@ -56,7 +41,7 @@ class App extends Component {
       this.setState((prevState) => ({
         images: page === 1 ? data : [...prevState.images, ...data],
         hasMoreImages: data.length > 0,
-        loading: false, 
+        loading: false,
       }));
     } catch (error) {
       console.error("Error fetching images:", error);
@@ -65,13 +50,18 @@ class App extends Component {
   };
 
   handleLoadMore = () => {
-    this.setState((prevState) => ({
-      currentPage: prevState.currentPage + 1,
-      loading: true, 
-      shouldFetchMore: true,
-    }));
-  };
+    const { query, currentPage, hasMoreImages } = this.state;
 
+    if (hasMoreImages) {
+      const nextPage = currentPage + 1;
+      this.setState({
+        currentPage: nextPage,
+        loading: true,
+      }, () => {
+        this.fetchImages(query, nextPage);
+      });
+    }
+  };
 
   handleImageClick = (id) => {
     const { images } = this.state;
@@ -84,17 +74,16 @@ class App extends Component {
   };
 
   render() {
-    const { images, selectedImage, loading, initialLoading, hasMoreImages } = this.state;
+    const { images, selectedImage, loading, hasMoreImages } = this.state;
 
     return (
       <div>
-        <SearchBar onSubmit={this.handleSearch} />
+        <SearchBar onSubmit={this.searchImages} />
         <ImageGallery images={images} onImageClick={this.handleImageClick} />
         {selectedImage && <Modal image={selectedImage} onClose={this.handleModalClose} />}
-        {initialLoading && <Spinner />}
-        {images.length > 0 && hasMoreImages && !loading && (
+        {images.length > 0 && hasMoreImages && !loading ? (
           <Button onClick={this.handleLoadMore} />
-        )}
+        ) : null}
         {loading && <Spinner />}
       </div>
     );
