@@ -24,7 +24,7 @@ class App extends Component {
       images: [],
       query: searchQuery,
       currentPage: 1,
-      loading: true, // Set loading to true during the initial search
+      loading: true, 
       hasMoreImages: true,
       shouldFetchMore: false,
     });
@@ -56,7 +56,7 @@ class App extends Component {
       this.setState((prevState) => ({
         images: page === 1 ? data : [...prevState.images, ...data],
         hasMoreImages: data.length > 0,
-        loading: false, // Set loading to false after images are fetched
+        loading: false, 
       }));
     } catch (error) {
       console.error("Error fetching images:", error);
@@ -67,7 +67,7 @@ class App extends Component {
   handleLoadMore = () => {
     this.setState((prevState) => ({
       currentPage: prevState.currentPage + 1,
-      loading: true, // Set loading to true when "Load more" button is clicked
+      loading: true, 
       shouldFetchMore: true,
     }));
   };
