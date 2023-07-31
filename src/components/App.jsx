@@ -56,7 +56,7 @@ class App extends Component {
   };
 
   handleLoadMore = () => {
-    const { query, currentPage, hasMoreImages } = this.state;
+    const {  currentPage, hasMoreImages } = this.state;
 
     if (hasMoreImages) {
       const nextPage = currentPage + 1;
