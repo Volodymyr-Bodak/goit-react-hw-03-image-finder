@@ -19,6 +19,14 @@ class App extends Component {
     hasMoreImages: true,
   };
 
+  componentDidUpdate(prevProps, prevState) {
+    const { query, currentPage } = this.state;
+
+    if (prevState.query !== query || prevState.currentPage !== currentPage) {
+      this.fetchImages(query, currentPage);
+    }
+  }
+
   searchImages = (searchQuery) => {
     this.setState({
       images: [],
@@ -26,8 +34,6 @@ class App extends Component {
       currentPage: 1,
       loading: true,
       hasMoreImages: true,
-    }, () => {
-      this.fetchImages(searchQuery, 1);
     });
   };
 
@@ -57,8 +63,6 @@ class App extends Component {
       this.setState({
         currentPage: nextPage,
         loading: true,
-      }, () => {
-        this.fetchImages(query, nextPage);
       });
     }
   };
@@ -79,11 +83,11 @@ class App extends Component {
     return (
       <div>
         <SearchBar onSubmit={this.searchImages} />
-        <ImageGallery images={images} onImageClick={this.handleImageClick} />
+        {images.length > 0 && (
+          <ImageGallery images={images} onImageClick={this.handleImageClick} />
+        )}
         {selectedImage && <Modal image={selectedImage} onClose={this.handleModalClose} />}
-        {images.length > 0 && hasMoreImages && !loading ? (
-          <Button onClick={this.handleLoadMore} />
-        ) : null}
+        {images.length > 0 && hasMoreImages && !loading && <Button onClick={this.handleLoadMore} />}
         {loading && <Spinner />}
       </div>
     );
