@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SearchBar from "./SearchBar";
 import ImageGallery from "./ImageGallery";
@@ -9,89 +9,75 @@ import Spinner from "./Loader";
 const ApiKey = "37228080-31d2118f700db371d754d6a1e";
 const baseUrl = `https://pixabay.com/api/?key=${ApiKey}&image_type=photo&orientation=horizontal&per_page=12`;
 
-class App extends Component {
-  state = {
-    images: [],
-    query: "",
-    currentPage: 1,
-    selectedImage: null,
-    loading: false,
-    hasMoreImages: true,
+const App = () => {
+  const [images, setImages] = useState([]);
+  const [query, setQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [hasMoreImages, setHasMoreImages] = useState(true);
+
+  useEffect(() => {
+    fetchImages(query, currentPage);
+  }, [query, currentPage]);
+
+  const searchImages = (searchQuery) => {
+    setImages([]);
+    setQuery(searchQuery);
+    setCurrentPage(1);
+    setLoading(true);
+    setHasMoreImages(true);
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    const { query, currentPage } = this.state;
-
-    if (prevState.query !== query || prevState.currentPage !== currentPage) {
-      this.fetchImages(query, currentPage);
-    }
-  }
-
-  searchImages = (searchQuery) => {
-    this.setState({
-      images: [],
-      query: searchQuery,
-      currentPage: 1,
-      loading: true,
-      hasMoreImages: true,
-    });
-  };
-
-  fetchImages = async (searchQuery, page) => {
-    this.setState({ loading: true });
+  const fetchImages = async (searchQuery, page) => {
+    setLoading(true);
 
     try {
       const response = await axios.get(`${baseUrl}&q=${searchQuery}&page=${page}`);
       const data = response.data.hits;
 
-      this.setState((prevState) => ({
-        images: page === 1 ? data : [...prevState.images, ...data],
-        hasMoreImages: data.length > 0,
-        loading: false,
-      }));
+      setImages((prevImages) => (page === 1 ? data : [...prevImages, ...data]));
+      setHasMoreImages(data.length > 0);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching images:", error);
-      this.setState({ loading: false });
+      setLoading(false);
     }
   };
 
-  handleLoadMore = () => {
-    const {  currentPage, hasMoreImages } = this.state;
-
+  const handleLoadMore = () => {
     if (hasMoreImages) {
-      const nextPage = currentPage + 1;
-      this.setState({
-        currentPage: nextPage,
-        loading: true,
-      });
+      setCurrentPage((prevPage) => prevPage + 1);
+      setLoading(true);
     }
   };
 
-  handleImageClick = (id) => {
-    const { images } = this.state;
+  const handleImageClick = (id) => {
     const selected = images.find((image) => image.id === id);
-    this.setState({ selectedImage: selected });
+    setSelectedImage(selected);
   };
 
-  handleModalClose = () => {
-    this.setState({ selectedImage: null });
+  const handleModalClose = () => {
+    setSelectedImage(null);
   };
 
-  render() {
-    const { images, selectedImage, loading, hasMoreImages } = this.state;
-
+  const render = () => {
     return (
       <div>
-        <SearchBar onSubmit={this.searchImages} />
+        <SearchBar onSubmit={searchImages} />
         {images.length > 0 && (
-          <ImageGallery images={images} onImageClick={this.handleImageClick} />
+          <ImageGallery images={images} onImageClick={handleImageClick} />
         )}
-        {selectedImage && <Modal image={selectedImage} onClose={this.handleModalClose} />}
-        {images.length > 0 && hasMoreImages && !loading && <Button onClick={this.handleLoadMore} />}
+        {selectedImage && <Modal image={selectedImage} onClose={handleModalClose} />}
+        {images.length > 0 && hasMoreImages && !loading && (
+          <Button onClick={handleLoadMore} />
+        )}
         {loading && <Spinner />}
       </div>
     );
-  }
-}
+  };
+
+  return render();
+};
 
 export default App;
